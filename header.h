@@ -10,8 +10,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "code/Util.c"
-
 int inseridos = 0;
 int buscas = 0;
 
@@ -27,8 +25,13 @@ typedef struct s_Register {
     char Genre[50];
 } REGISTER;
 
+#include "code/Insert.c"
+#include "code/Util.c"
+
 FILE * readPositions();
 void savePosition();
+
+int insertRegister(REGISTER newRegister);
 
 
 #endif

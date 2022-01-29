@@ -5,6 +5,8 @@
 */
 
 #include "header.h"
+
+
 /*------------------------------------ Main --------------------------------------*/
 int main(int argc, char const *argv[])
 {
@@ -31,15 +33,15 @@ int main(int argc, char const *argv[])
     fread(buscaData, sizeof(KEY), buscaSize, file);
     fclose(file);
 
-    FILE* resultFile;
+    FILE* dataFile;
 
-    if(access("dataResult.bin", F_OK ) == 0 ) {
-	    resultFile = fopen("dataResult.bin", "r+b");
+    if(access("registers.bin", F_OK ) == 0 ) {
+	    dataFile = fopen("registers.bin", "r+b");
     } else {
-       resultFile = fopen("dataResult.bin", "w+b");
+       dataFile = fopen("registers.bin", "w+b");
     }
 
-    fclose(resultFile);
+    fclose(dataFile);
 
     file = readPositions();
         fread(&inseridos, sizeof(int), 1, file);
@@ -66,9 +68,10 @@ int main(int argc, char const *argv[])
         switch (option)
         {
         case 1:
-            //inserted = Insert(insertData[inseridos]);
-
+            
+            insertRegister(insertData[inseridos]);
             inseridos++;
+
             savePosition();
 
             break;
