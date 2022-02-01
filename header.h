@@ -4,6 +4,8 @@
 #define true 1;
 #define false 0;
 #define NIL -1;
+#define MAXKEYS 3;
+#define NOKEY '@'
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,13 +27,31 @@ typedef struct s_Register {
     char Genre[50];
 } REGISTER;
 
+typedef struct {
+    int keyCount;
+    KEY keys[3];
+    int childs[4];
+} PAGE;
+
+#define PAGESIZE sizeof(PAGE)
+
 #include "code/Insert.c"
 #include "code/Util.c"
 
 FILE * readPositions();
 void savePosition();
 
-int insertRegister(REGISTER newRegister);
+void insertRegister(REGISTER newRegister);
+int insertRegisterIndex(int rrn, KEY key, int* promo_right_child, KEY* promo_key, FILE* file);
+int createRoot(KEY key, int left, int right, FILE* file);
+int getPage(FILE* file);
+void initPag(PAGE* page);
+void writeIndex(int rrn, PAGE* page, FILE* file);
+void readPage (int rrn, PAGE* page, FILE* file);
+int searchNode(KEY key, PAGE* page, int *pos);
+void insertInPage (KEY key, int rightChild, PAGE* page);
+void split (KEY key, int rightChild, PAGE* oldPage, KEY* promo_key, int* promo_right_child, PAGE* newPage, FILE* file);
+
 
 
 #endif
