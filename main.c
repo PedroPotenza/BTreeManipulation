@@ -3,9 +3,7 @@
         Gabriel Tetzlaf Mansano - 201150956
         Pedro Henrique Potenza Fernandes - 201151219
 */
-
 #include "header.h"
-
 
 /*------------------------------------ Main --------------------------------------*/
 int main(int argc, char const *argv[])
@@ -57,11 +55,12 @@ int main(int argc, char const *argv[])
     printf(" (2) -> Listar os dados de todos os clientes\n");
     printf(" (3) -> Listar os dados de um cliente especifico\n");
     printf(" (4) -> Sair\n");
+    printf(" (5) -> Deleta os arquivos\n");
     
     int option, repeat = 1;
 
     int root, promo_rrn = NIL;
-    KEY promo_key;
+    KEYPAGE promo_key;
 
     //root = RRN da pagina que representa a root
 
@@ -70,40 +69,40 @@ int main(int argc, char const *argv[])
         int repeatKey = false;
         printf("\n\nOpcao: ");
         scanf("%d", &option);
-
         switch (option)
         {
         case 1:
             
+            KEYPAGE insertDataKey;
+            strcpy(insertDataKey.Id, insertData[inseridos].Id.ClientId);
+            strcat(insertDataKey.Id, insertData[inseridos].Id.MovieId);
+            insertDataKey.rrn = -1;
+
             //tento acessar a arvore, se ela existe eu leio o header (root) e tento inserir a chave no index, se ela nao existir eu crio ela colocando o register na root (createRoot)
             if(access("bTreeIndex.bin", F_OK ) == 0) {
                 file = fopen("bTreeIndex.bin", "r+b");
                 fread(&root, sizeof(int), 1, file);
 
                 //tento inserir a chave no indice 
-                repeatKey = insertRegisterIndex(root, insertData[inseridos].Id, &promo_rrn, &promo_key, file); 
+                //repeatKey = 
+                insertRegisterIndex(root, insertDataKey, &promo_rrn, &promo_key, file); 
                 //retorno booleano: true se a chave ja existir, falso se a chave for uma nova chave nao existente
 
             } else {
                 file = fopen("bTreeIndex.bin", "w+b");
                 int x = NIL;
                 fwrite(&x, 1, sizeof(int), file);
-                printf("teste\n");
-                root = createRoot(insertData[inseridos].Id, -1, -1, file);
+                root = createRoot(insertDataKey.Id, -1, -1, file);
                 repeatKey = false;
             }
             fclose(file);
 
             // so inserir o registro no dataFile se a chave nao existir no indice
-            if(!repeatKey)
+            // if(!repeatKey)
                 insertRegister(insertData[inseridos]);
-            else {
-                
-                char key[5];
-                strcpy(key, insertData[inseridos].Id.ClientId);
-                strcat(key, insertData[inseridos].Id.MovieId);
-                printf("Chave %s duplicada!\n", key);
-            }
+            // else {     
+            //     printf("Chave %s duplicada!\n", insertDataKey);
+            // }
 
             inseridos++;
             savePosition();
@@ -112,31 +111,10 @@ int main(int argc, char const *argv[])
 
         case 2:
             //found = PrimarySearchV2(buscaPrimariaData[buscas_primarias]);
-            printf("teste\n");
-            KEY chavesTest[5];
-            char keyComplete[2][5];
-            int compareResult;
-
-            strcpy(chavesTest[0].ClientId, "01");
-            strcpy(chavesTest[0].MovieId, "02");
-
-            strcpy(keyComplete[0], chavesTest[0].ClientId);
-            strcat(keyComplete[0], chavesTest[0].MovieId);
-
-            strcpy(chavesTest[1].ClientId, "04");
-            strcpy(chavesTest[1].MovieId, "01");
-
-            strcpy(keyComplete[1], chavesTest[1].ClientId);
-            strcat(keyComplete[1], chavesTest[1].MovieId);
-
-            compareResult = strcmp(keyComplete[0],keyComplete[1]);
-
-            if(compareResult < 0)
-                printf("A chave %s eh menor que a chave %s", keyComplete, keyComplete[1]);
-            if(compareResult > 0)
-                printf("A chave %s eh maior que a chave %s", keyComplete[0], keyComplete[1]);
-            if(compareResult == 0)
-                printf("As chaves %s e %s sao iguais", keyComplete[0], keyComplete[1]);
+            printf("Tamanho de uma page: %d\n", sizeof(PAGE));
+            printf("Tamanho de uma keypage: %d\n", sizeof(KEYPAGE));
+            printf("Tamanho de um int: %d\n", sizeof(int));
+            printf("Tamanho de um char: %d\n", sizeof(char));
 
             break;
 
@@ -154,7 +132,17 @@ int main(int argc, char const *argv[])
             printf("Finalizando...\n\n\n");
             repeat = 0;
             break;
-        
+
+        case 5: 
+            remove("bTreeIndex.bin");
+            remove("position.bin");
+            remove("registers.bin");
+            printf("Arquivos resetados!\n");
+            fopen("registers.bin", "w+b");
+
+            inseridos = 0;
+            buscas = 0;
+            break;
         default:
             break;
         }
