@@ -61,6 +61,7 @@ int main(int argc, char const *argv[])
 
     int root, promo_rrn = NIL;
     KEYPAGE promo_key;
+    int promoted;
 
     //root = RRN da pagina que representa a root
 
@@ -76,7 +77,7 @@ int main(int argc, char const *argv[])
             KEYPAGE insertDataKey;
             strcpy(insertDataKey.Id, insertData[inseridos].Id.ClientId);
             strcat(insertDataKey.Id, insertData[inseridos].Id.MovieId);
-            insertDataKey.rrn = -1;
+            insertDataKey.rrn = 0;
 
             //tento acessar a arvore, se ela existe eu leio o header (root) e tento inserir a chave no index, se ela nao existir eu crio ela colocando o register na root (createRoot)
             if(access("bTreeIndex.bin", F_OK ) == 0) {
@@ -85,25 +86,29 @@ int main(int argc, char const *argv[])
 
                 //tento inserir a chave no indice 
                 //repeatKey = 
-                insertRegisterIndex(root, insertDataKey, &promo_rrn, &promo_key, file); 
-                //retorno booleano: true se a chave ja existir, falso se a chave for uma nova chave nao existente
+                insertDataKey.rrn = getRegisterRrn();
+                promoted = insertRegisterIndex(root, insertDataKey, &promo_rrn, &promo_key, file); 
+                if(promoted == 3) {
+                    printf("Chave %s duplicada!\n", insertDataKey);
+                    fclose(file);
+                    inseridos ++;
+                    break;
+                }
+
+                if(promoted)
+                   root = createRoot(promo_key, root, promo_rrn, file);
 
             } else {
                 file = fopen("bTreeIndex.bin", "w+b");
                 int x = NIL;
                 fwrite(&x, 1, sizeof(int), file);
-                root = createRoot(insertDataKey.Id, -1, -1, file);
+                root = createRoot(insertDataKey, -1, -1, file);
                 repeatKey = false;
             }
             fclose(file);
 
-            // so inserir o registro no dataFile se a chave nao existir no indice
-            // if(!repeatKey)
-                insertRegister(insertData[inseridos]);
-            // else {     
-            //     printf("Chave %s duplicada!\n", insertDataKey);
-            // }
-
+            insertRegister(insertData[inseridos]);
+           
             inseridos++;
             savePosition();
 

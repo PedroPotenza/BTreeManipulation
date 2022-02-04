@@ -54,7 +54,7 @@ int getRegisterRrn() {
     fseek(dataFile, 0, SEEK_END);
     int adress = ftell(dataFile);
     return adress/REGISTERSIZE;
-    close(dataFile);
+    fclose(dataFile);
 }
 
 /**
@@ -72,6 +72,7 @@ void initPage(PAGE* page)
         page->childs[i] = NIL;
     }
     page->childs[MAXKEYS] = NIL;
+    page->keyCount = 0;
 }
 
 /**
@@ -102,7 +103,7 @@ void writeIndex(int rrn, PAGE* page, FILE* file) {
 }
 
 
-int createRoot(char* key, int left, int right, FILE* file) { 
+int createRoot(KEYPAGE key, int left, int right, FILE* file) { 
     PAGE page; 
     int rrn;
 
@@ -110,19 +111,18 @@ int createRoot(char* key, int left, int right, FILE* file) {
     initPage(&page);
     // printf("Criou a pagina %d e inicializou ela com tudo nulo.\n", rrn);
 
-    strcpy(page.keys[0].Id, key);
-    page.keys[0].rrn = 0;
+    page.keys[0] = key;
     page.childs[0] = left;
     page.childs[1] = right;
     page.keyCount = 1;
-    printf("Adicionou o registro na pagina %d.\n", rrn);
+    // printf("Adicionou o registro na pagina %d.\n", rrn);
 
     writeIndex(rrn, &page, file);
-    printf("Gravou a pagina no  bTreeIndex.bin\n");
+    // printf("Gravou a pagina no  bTreeIndex.bin\n");
 
     rewind(file);
     fwrite(&rrn, 1, sizeof(int), file);
-    printf("Reescrevendo o header para %d.\n", rrn);
+    // printf("Reescrevendo o header para %d.\n", rrn);
 
     return rrn;
 
@@ -197,128 +197,73 @@ void insertInPage (KEYPAGE key, int rightChild, PAGE* page) {
   
 }
 
-// /**
-//  * @brief Divide a pagina e sobe o da esquerda
-//  * 
-//  * @param key chave a ser inserida 
-//  * @param rightChild filho da direita dela 
-//  * @param oldPage pagina antiga (q tem que ser dividida)
-//  * @param promo_key chave a ser promovida
-//  * @param promo_righ_child o filho da chave a ser promovida
-//  * @param newPage a nova pagina feita com metade da pagina antiga
-//  */
-// void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEY* promo_key, int* promo_right_child, PAGE* newPage, FILE* file) {
+/**
+ * @brief Divide a pagina e sobe o da esquerda
+ * 
+ * @param key chave a ser inserida 
+ * @param rightChild filho da direita dela 
+ * @param oldPage pagina antiga (q tem que ser dividida)
+ * @param promo_key chave a ser promovida
+ * @param promo_righ_child o filho da chave a ser promovida
+ * @param newPage a nova pagina feita com metade da pagina antiga
+ */
+void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int* promo_right_child, PAGE* newPage, FILE* file) {
     
-//     int i; 
-//     //cria 2 vetores auxiliares, um com as chaves e o outro com os filhos dessas chaves
-//     KEY workKeys[3 + 1];
-//     int workChild[3 + 2];
+    int i; 
+    //cria 2 vetores auxiliares, um com as chaves e o outro com os filhos dessas chaves
+    KEYPAGE workKeys[MAXKEYS + 1];
+    int workChild[MAXKEYS + 2];
 
-//     //salvo as informacoes da pagina antiga nessa variavel local
-//     for (i = 0; i < 3; i++)
-//     {
-//         strcpy(workKeys[i].ClientId, oldPage->keys[i].ClientId);
-//         strcpy(workKeys[i].MovieId, oldPage->keys[i].MovieId);
+    //salvo as informacoes da pagina antiga nessa variavel local
+    for (i = 0; i < 3; i++)
+    {
+        workKeys[i] = oldPage->keys[i];
 
-//         workChild[i] = oldPage->childs[i];
-//     }
+        workChild[i] = oldPage->childs[i];
+    }
     
-//     //nao esqueco de salvar o ultimo filho (pq tem uma posicao a mais)
-//     workChild[i] = oldPage->childs[i];
+    //nao esqueco de salvar o ultimo filho (pq tem uma posicao a mais)
+    workChild[i] = oldPage->childs[i];
 
-//     char keyLook[5];
-//     char keyPage[5];
+    //insiro a chave na pagina auxiliar ja de forma ordenada 
+    for (i = MAXKEYS; strcmp(key.Id,workKeys[i-1].Id) < 0 && i > 0; i--) {
 
-//     strcpy(keyLook, key.ClientId);
-//     strcat(keyLook, key.MovieId);
-
-//     strcpy(keyPage, workKeys[2].ClientId);
-//     strcat(keyPage, workKeys[2].MovieId);
-
-//     int compareResult = strcmp(keyLook,keyPage);
-
-//     //insiro a chave na pagina auxiliar ja de forma ordenada 
-//     for (i = 3; compareResult < 0 && i > 0; i--) {
-
-//         strcpy(keyPage, workKeys[i-1].ClientId);
-//         strcat(keyPage, workKeys[i-1].MovieId);
-
-//         compareResult = strcmp(keyLook,keyPage);
         
-//         strcpy(workKeys[i].ClientId, workKeys[i-1].ClientId);
-//         strcpy(workKeys[i].MovieId, workKeys[i-1].MovieId);
-//         workChild[i+1] = workChild[i];
-//     }
-//     strcpy(workKeys[i].ClientId, key.ClientId);
-//     strcpy(workKeys[i].MovieId, key.MovieId);
-//     workChild[i+1] = rightChild;
+        workKeys[i] = workKeys[i-1];
+        workChild[i+1] = workChild[i];
+    }
+    workKeys[i] = key;
+    workChild[i+1] = rightChild;
 
-//     //salva o rrn da pagina nova a ser criada
-//     *promo_right_child = getPage(file);
-//     //cria a pagina
-//     initPage(newPage);
+    //salva o rrn da pagina nova a ser criada
+    *promo_right_child = getPage(file);
+    //cria a pagina
+    initPage(newPage);
 
-//     //preencher a pagina velha e a pagina nova com as informacoes corretas
+    //preencher a pagina velha e a pagina nova com as informacoes corretas
+    oldPage->keys[0] = workKeys[0];
+    oldPage->childs[0] = workChild[0];
 
-//     strcpy(oldPage->keys[0].ClientId, workKeys[0].ClientId);
-//     strcpy(oldPage->keys[0].MovieId, workKeys[0].MovieId);
-//     oldPage->childs[0] = workChild[0];
-//     for (int i = 1; i <= 2; i++)
-//     {
-//         strcpy(oldPage->keys[i].ClientId, "@@");
-//         strcpy(oldPage->keys[i].MovieId, "@@");
-//         oldPage->childs[i] = NIL;
-//     }
+    for (int i = 1; i <= 2; i++)
+    {
+        strcpy(oldPage->keys[i].Id, "@@@@");
+        oldPage->keys[i].rrn = NIL;
+        oldPage->childs[i] = NIL;
+    }
+    oldPage->keyCount = 1;
 
-//     char keyPromo[5];
+    printf("Chave %s promovida!\n", workKeys[1].Id);
+        *promo_key = workKeys[1];
 
-//     strcpy(keyPromo, workKeys[1].ClientId);
-//     strcat(keyPromo, workKeys[1].MovieId);
+    for (int i = 2; i <= 3; i++)
+    {
+        newPage->keys[i-2] = workKeys[i];
+        newPage->childs[i-2] = workChild[i];
+    }
 
-//     printf("Chave %s promovida!\n", keyPromo);
-
-//     for (int i = 2; i <= 3; i++)
-//     {
-//         strcpy(newPage->keys[i-2].ClientId, workKeys[i].ClientId);
-//         strcpy(newPage->keys[i-2].MovieId, workKeys[i].MovieId);
-//         newPage->childs[i-2] = workChild[i];
-//     }
-
-//     newPage->keyCount = 2;
-//     *promo_key = workKeys[1];
-
-//     printf("==================== VELHA ===========================\n");
-//     printf("informacoes da pagina antiga:\n");
-//     printf("key Count: %d\n", oldPage->keyCount);
-//         printf("\tChilds[0]: %d\n", oldPage->childs[0]);
-//     printf("key [0] id.Client: %s\n", oldPage->keys[0].ClientId);
-//     printf("key [0] id.Movie: %s\n", oldPage->keys[0].MovieId);
-//         printf("\tChilds[1]: %d\n", oldPage->childs[1]);
-//     printf("key [1] id.Client: %s\n", oldPage->keys[1].ClientId);
-//     printf("key [1] id.Movie: %s\n", oldPage->keys[1].MovieId);
-//         printf("\tChilds[2]: %d\n", oldPage->childs[2]);
-//     printf("key [2] id.Client: %s\n", oldPage->keys[2].ClientId);
-//     printf("key [2] id.Movie: %s\n", oldPage->keys[2].MovieId);
-//         printf("\tChilds[3]: %d\n", oldPage->childs[3]);
-//     printf("\n");
-
-//     printf("==================== NOVA ============================\n");
-
-//     printf("informacoes da pagina %d:\n");
-//     printf("key Count: %d\n", newPage->keyCount);
-//         printf("\tChilds[0]: %d\n", newPage->childs[0]);
-//     printf("key [0] id.Client: %s\n", newPage->keys[0].ClientId);
-//     printf("key [0] id.Movie: %s\n", newPage->keys[0].MovieId);
-//         printf("\tChilds[1]: %d\n", newPage->childs[1]);
-//     printf("key [1] id.Client: %s\n", newPage->keys[1].ClientId);
-//     printf("key [1] id.Movie: %s\n", newPage->keys[1].MovieId);
-//         printf("\tChilds[2]: %d\n", newPage->childs[2]);
-//     printf("key [2] id.Client: %s\n", newPage->keys[2].ClientId);
-//     printf("key [2] id.Movie: %s\n", newPage->keys[2].MovieId);
-//         printf("\tChilds[3]: %d\n", newPage->childs[3]);
-//     printf("\n");
+    newPage->keyCount = 2;
     
-// }
+}
 
 /**
  * @brief Funcao reutilizada dentro da arvore para inserir uma chave 
@@ -336,12 +281,12 @@ int insertRegisterIndex(int rrn, KEYPAGE key, int* promo_right_child, KEYPAGE* p
     int pos, rrnPromotedBelow;
     KEYPAGE keyPromotedBelow;
 
-    printf("insertRegisterIndex com rrn \"%d\"\n", rrn);
+    // printf("insertRegisterIndex com rrn \"%d\"\n", rrn);
 
     // se for uma folha
     if(rrn == -1) {
 
-        printf("entrou no if do rrn -1\n");
+        // printf("entrou no if do rrn -1\n");
 
         *promo_key = key;
         *promo_right_child = NIL;
@@ -355,35 +300,35 @@ int insertRegisterIndex(int rrn, KEYPAGE key, int* promo_right_child, KEYPAGE* p
     //tenta achar a chave dentro da pagina
     found = searchNode(key, &page, &pos); 
     if(found) { 
-        return 0;
+        return 3;
     }
 
     promoted = insertRegisterIndex(page.childs[pos], key, &rrnPromotedBelow, &keyPromotedBelow, file);
-    
-    printf("promoted: %d\n", promoted);
+
     //se a chave foi inserida na pagina, ela nao foi promovida, logo para a recursao
     if(!promoted) {
         return false;
     }
 
+    if(promoted == 3) {
+        return 3;
+    }
+
     //se tem espaco naquela pagina, insere la 
     if(page.keyCount < MAXKEYS) {
 
-        printf("tem espaco na pagina \"%d\"\n", rrn);
-        // printf("keyPromotedBelow.ClientId: %s\n", keyPromotedBelow.ClientId);
-        // printf("keyPromotedBelow.MovieId: %s\n", keyPromotedBelow.MovieId);
-        printf("rrnPromotedBelow: %d", rrnPromotedBelow);
-
+        // printf("tem espaco na pagina \"%d\"\n", rrn);
+        
         insertInPage(keyPromotedBelow, rrnPromotedBelow, &page);
         writeIndex(rrn, &page, file);
         return false;
     } else { 
         //se nao tem espaco na pagina, divide ela 
         printf("Divisao de no.\n");
-        // split(keyPromotedBelow, rrnPromotedBelow, &page, promo_key, promo_right_child, &newpage, file);
-        printf("AAAAAAA RRN: %d\n", rrn);
-        // writeIndex(rrn, &page, file);
-        // writeIndex(*promo_right_child, &newpage, file);
+        split(keyPromotedBelow, rrnPromotedBelow, &page, promo_key, promo_right_child, &newpage, file);
+        // printf("AAAAAAA RRN: %d\n", rrn);
+        writeIndex(rrn, &page, file);
+        writeIndex(*promo_right_child, &newpage, file);
         return true;
     }
 

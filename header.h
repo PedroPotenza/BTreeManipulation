@@ -50,14 +50,14 @@ void savePosition();
 void insertRegister(REGISTER newRegister);
 
 int insertRegisterIndex(int rrn, KEYPAGE key, int* promo_right_child, KEYPAGE* promo_key, FILE* file);
-int createRoot(char* key, int left, int right, FILE* file);
+int createRoot(KEYPAGE key, int left, int right, FILE* file);
 int getPage(FILE* file);
 void initPag(PAGE* page);
 void writeIndex(int rrn, PAGE* page, FILE* file);
 void readPage (int rrn, PAGE* page, FILE* file);
 int searchNode(KEYPAGE key, PAGE* page, int *pos);
 void insertInPage (KEYPAGE key, int rightChild, PAGE* page);
-void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEY* promo_key, int* promo_right_child, PAGE* newPage, FILE* file);
+void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int* promo_right_child, PAGE* newPage, FILE* file);
 
 
 
