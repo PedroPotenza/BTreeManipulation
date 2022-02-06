@@ -43,6 +43,7 @@ typedef struct {
 
 #include "code/Insert.c"
 #include "code/Util.c"
+#include "code/Printf.c"
 
 FILE * readPositions();
 void savePosition();
@@ -60,7 +61,7 @@ void insertInPage (KEYPAGE key, int rightChild, PAGE* page);
 void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int* promo_right_child, PAGE* newPage, FILE* file);
 
 void PrintTreeInOrder(int rrn, FILE* file);
-
+void PrintRegisterByIndex(int rrn, int position, int rrnRegister,FILE* file);
 
 
 #endif

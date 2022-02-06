@@ -117,6 +117,7 @@ int main(int argc, char const *argv[])
         case 2:
             
 	        file = fopen("bTreeIndex.bin", "r+b");
+            fread(&root, sizeof(int), 1, file);
    
             PrintTreeInOrder(root, file);
 

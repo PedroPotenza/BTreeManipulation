@@ -250,16 +250,20 @@ void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int*
         oldPage->keys[i].rrn = NIL;
         oldPage->childs[i] = NIL;
     }
+    oldPage->childs[3] = NIL;
+    oldPage->childs[1] = workChild[1];
     oldPage->keyCount = 1;
 
     printf("Chave %s promovida!\n", workKeys[1].Id);
         *promo_key = workKeys[1];
 
-    for (int i = 2; i <= 3; i++)
-    {
-        newPage->keys[i-2] = workKeys[i];
-        newPage->childs[i-2] = workChild[i];
-    }
+    newPage->keys[0] = workKeys[2];
+    newPage->childs[0] = workChild[2];
+
+    newPage->keys[1] = workKeys[3];
+    newPage->childs[1] = workChild[3];
+
+    newPage->childs[2] = workChild[4];
 
     newPage->keyCount = 2;
     
