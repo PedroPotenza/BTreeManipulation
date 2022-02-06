@@ -44,6 +44,8 @@ typedef struct {
 #include "code/Insert.c"
 #include "code/Util.c"
 #include "code/Printf.c"
+#include "code/Find.c"
+
 
 FILE * readPositions();
 void savePosition();
@@ -62,6 +64,8 @@ void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int*
 
 void PrintTreeInOrder(int rrn, FILE* file);
 void PrintRegisterByIndex(int rrn, int position, int rrnRegister,FILE* file);
+
+int findRegister(int rrn, KEYPAGE keyToFind, FILE* file);
 
 
 #endif

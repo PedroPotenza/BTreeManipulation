@@ -42,9 +42,13 @@ int main() {
 	struct busca {
         char CodCli[3];
         char CodF[3];
-    } vet_b[3] = {{"01","01"},
+    } vet_b[6] = {{"01","01"},
                   {"01","03"},
-				  {"05", "07"}};//n�o encontrada
+				  {"05", "07"},
+                  {"01", "07"},
+                  {"02", "03"},
+                  {"03", "03"}
+                  };//n�o encontrada
     
     fd = fopen("busca.bin", "w+b");
     fwrite(vet_b, sizeof(vet_b), 1, fd);

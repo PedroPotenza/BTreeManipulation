@@ -126,7 +126,19 @@ int main(int argc, char const *argv[])
             break;
 
         case 3:
-            //found = SecondarySearch(buscaSecundariaData[buscas_secundarias]);
+            int found;
+            KEYPAGE findDataKey;
+            strcpy(findDataKey.Id, buscaData[buscas].ClientId);
+            strcat(findDataKey.Id, buscaData[buscas].MovieId);
+
+            file = fopen("bTreeIndex.bin", "r+b");
+            fread(&root, sizeof(int), 1, file);
+
+            found = findRegister(root, findDataKey, file);
+            if(!found)
+                printf("Nao foi possivel localizar a chave \"%s\"!\n",  findDataKey.Id);
+
+            fclose(file);
             
             buscas++;
             savePosition();
