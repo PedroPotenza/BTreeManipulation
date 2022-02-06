@@ -115,11 +115,12 @@ int main(int argc, char const *argv[])
             break;
 
         case 2:
-            //found = PrimarySearchV2(buscaPrimariaData[buscas_primarias]);
-            printf("Tamanho de uma page: %d\n", sizeof(PAGE));
-            printf("Tamanho de uma keypage: %d\n", sizeof(KEYPAGE));
-            printf("Tamanho de um int: %d\n", sizeof(int));
-            printf("Tamanho de um char: %d\n", sizeof(char));
+            
+	        file = fopen("bTreeIndex.bin", "r+b");
+   
+            PrintTreeInOrder(root, file);
+
+            fclose(file);
 
             break;
 

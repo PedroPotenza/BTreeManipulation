@@ -59,6 +59,8 @@ int searchNode(KEYPAGE key, PAGE* page, int *pos);
 void insertInPage (KEYPAGE key, int rightChild, PAGE* page);
 void split (KEYPAGE key, int rightChild, PAGE* oldPage, KEYPAGE* promo_key, int* promo_right_child, PAGE* newPage, FILE* file);
 
+void PrintTreeInOrder(int rrn, FILE* file);
+
 
 
 #endif
